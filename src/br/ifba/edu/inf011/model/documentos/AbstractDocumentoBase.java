@@ -3,6 +3,7 @@ package br.ifba.edu.inf011.model.documentos;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import br.ifba.edu.inf011.command.CommandHistory;
 import br.ifba.edu.inf011.model.Assinatura;
 import br.ifba.edu.inf011.model.FWDocumentException;
 import br.ifba.edu.inf011.model.operador.Operador;
@@ -14,13 +15,16 @@ public abstract class AbstractDocumentoBase implements Documento{
     protected Operador proprietario; 
     protected LocalDateTime dataCriacao;
     protected Privacidade privacidade;
+
+		protected CommandHistory commandHistory;
     
     public AbstractDocumentoBase(String conteudo, Operador proprietario, 
-			 LocalDateTime dataCriacao, Privacidade privacidade, Set<Assinatura> assinaturas) {
-		this.conteudo = conteudo;
-		this.proprietario = proprietario;
-		this.dataCriacao = dataCriacao;
-		this.privacidade = privacidade;
+			LocalDateTime dataCriacao, Privacidade privacidade, Set<Assinatura> assinaturas) {
+			this.conteudo = conteudo;
+			this.proprietario = proprietario;
+			this.dataCriacao = dataCriacao;
+			this.privacidade = privacidade;
+			this.commandHistory = new CommandHistory();
     }    
     
     public AbstractDocumentoBase(Operador proprietario, Privacidade privacidade) {
@@ -66,6 +70,11 @@ public abstract class AbstractDocumentoBase implements Documento{
 	@Override
 	public void setNumero(String numero) {
 		this.numero = numero;
+	}
+
+	@Override
+	public CommandHistory getCommandHistory() {
+		return this.commandHistory;
 	}
     
     // Exemplo simples de representação do documento

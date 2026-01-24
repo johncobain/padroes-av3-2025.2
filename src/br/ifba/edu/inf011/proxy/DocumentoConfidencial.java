@@ -1,5 +1,6 @@
 package br.ifba.edu.inf011.proxy;
 
+import br.ifba.edu.inf011.command.CommandHistory;
 import br.ifba.edu.inf011.model.FWDocumentException;
 import br.ifba.edu.inf011.model.documentos.Documento;
 import br.ifba.edu.inf011.model.documentos.Privacidade;
@@ -58,6 +59,11 @@ public class DocumentoConfidencial implements Documento{
 	@Override
 	public void setNumero(String numero) {
 		this.wrappeeDocumento.setNumero(numero);
+	}
+
+	@Override
+	public CommandHistory getCommandHistory() {
+		return this.wrappeeDocumento.getCommandHistory();
 	}
 
 }

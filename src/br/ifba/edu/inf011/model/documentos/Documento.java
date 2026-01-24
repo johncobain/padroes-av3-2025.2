@@ -1,5 +1,6 @@
 package br.ifba.edu.inf011.model.documentos;
 
+import br.ifba.edu.inf011.command.CommandHistory;
 import br.ifba.edu.inf011.model.FWDocumentException;
 import br.ifba.edu.inf011.model.operador.Operador;
 import br.ifba.edu.inf011.prototype.Prototipavel;
@@ -12,4 +13,6 @@ public interface Documento extends Prototipavel{
     public String getConteudo() throws FWDocumentException;
     public Operador getProprietario();
     public Privacidade getPrivacidade();
+
+    public CommandHistory getCommandHistory();
 }

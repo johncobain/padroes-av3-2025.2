@@ -1,5 +1,6 @@
 package br.ifba.edu.inf011.decorator;
 
+import br.ifba.edu.inf011.command.CommandHistory;
 import br.ifba.edu.inf011.model.FWDocumentException;
 import br.ifba.edu.inf011.model.documentos.Documento;
 import br.ifba.edu.inf011.model.documentos.Privacidade;
@@ -55,5 +56,10 @@ public class DocumentoDecorator implements Documento{
 		this.wrappeeDocumento.setNumero(numero);
 		
 	}	
+
+	@Override
+	public CommandHistory getCommandHistory() {
+		return this.wrappeeDocumento.getCommandHistory();
+	}
 	
 }

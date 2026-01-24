@@ -12,7 +12,7 @@
 Padrão Utilizado: **_[Strategy](https://refactoring.guru/pt-br/design-patterns/strategy)_**
 
 ## Motivo:
-Com a aplicação em seu estado inicial, o gerenciamento de diferentes tipos de documentos estava preso diante do uso de mútiplos ifs/elses, então a implementação do padrão Strategy é uma boa escolha para solucionar isso. Pois, com o uso do padrão,
+Com a aplicação em seu estado inicial, o gerenciamento de diferentes tipos de documentos estava preso diante do uso de múltiplos ifs/elses, então a implementação do padrão Strategy é uma boa escolha para solucionar isso. Pois, com o uso do padrão,
 pode-se adicionar novas estratégias de autenticação com modificações mínimas no código, assim guardando o princípio de aberto e fechado (OCP), que antes era violado.
 
 ## Identificação e papel das classes:
@@ -32,3 +32,46 @@ Padrão Utilizado: **_[Command](https://refactoring.guru/pt-br/design-patterns/c
 Motivo:
 
 Identificação e papel das classes:
+
+fluxo de execução do comando EditarConteudoCommand:
+1. UI chama: model.salvarDocumento(doc, "novo texto")
+2. Model cria: new EditarConteudoCommand(doc, "novo texto")
+3. Model executa: doc.getCommandHistory().execute(cmd)
+4. CommandHistory chama: cmd.execute()
+5. EditarConteudoCommand:
+   - Salva: conteudoAnterior = "texto antigo"
+   - Aplica: doc.setConteudo("novo texto")
+6. CommandHistory: Adiciona cmd à pilha de undo
+7. CommandHistory: Registra no log: "EXECUTAR: Editar conteúdo..."
+
+
+
+fluxo decorators:
+Antes:
+repositorio = [documentoOriginal]
+atual = documentoOriginal
+
+Execute:
+documentoDecorado = new AssinaturaDecorator(documentoOriginal)
+repositorio = [documentoDecorado]  ← Substituiu!
+atual = documentoDecorado
+
+Undo:
+repositorio = [documentoOriginal]  ← Voltou!
+atual = documentoOriginal
+
+
+Macro
+Exemplo: Macro "Alterar e Assinar"
+1. Execute:
+   - Edita conteúdo: "Versão 1" → "Versão 2"
+   - Assina: adiciona AssinaturaDecorator
+
+2. Undo (ordem reversa):
+   - Primeiro: Remove assinatura (AssinaturaDecorator)
+   - Depois: Restaura conteúdo ("Versão 2" → "Versão 1")
+
+Se fizéssemos na ordem normal:
+   - Restauraria conteúdo primeiro
+   - Depois tentaria remover assinatura
+   - PROBLEMA: A assinatura pode referenciar o conteúdo!
