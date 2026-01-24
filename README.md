@@ -75,3 +75,32 @@ Se fizéssemos na ordem normal:
    - Restauraria conteúdo primeiro
    - Depois tentaria remover assinatura
    - PROBLEMA: A assinatura pode referenciar o conteúdo!
+
+
+
+Explicações dos métodos chave:
+
+salvarDocumento()
+
+O que faz: Cria EditarConteudoCommand e executa via CommandHistory
+Por quê: Transforma edição em comando reversível com log
+assinarDocumento()
+
+O que faz: Cria AssinarCommand passando this (o model)
+Por quê this?: Comando precisa atualizar repositório (trocar referências)
+Detalhe: Decorator envolve documento, precisamos substituir no repositório
+undo() / redo()
+
+O que faz: Delega para atual.getCommandHistory()
+Por quê no atual?: Cada documento tem histórico próprio
+Multi-documento: Undo afeta apenas documento selecionado
+macroAlterarEAssinar()
+
+O que faz: Cria MacroCommand com EditarConteudo + Assinar
+Por quê útil: Fluxo comum (editar → assinar) vira uma ação
+Undo: Desfaz as duas operações de uma vez
+atualizarRepositorio()
+
+O que faz: Substitui documento antigo por novo na lista
+Por quê necessário: Decorators criam novos objetos
+Usado por: Todos os comandos de decorator (Assinar, Proteger, TornarUrgente)
