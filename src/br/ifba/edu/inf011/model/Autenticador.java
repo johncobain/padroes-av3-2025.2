@@ -15,7 +15,7 @@ public class Autenticador {
 			numero = "PES-" + LocalDate.now().getDayOfYear() + "-" + documento.getProprietario().hashCode();
 		else if (tipo == 2) {
             if (documento.getPrivacidade() == Privacidade.SIGILOSO) {
-                numero = "SECURE-" + documento.getNumero().hashCode();
+                numero = "SECURE-" + documento.hashCode();
             } else {
                 numero = "PUB-" + documento.hashCode();
             }
