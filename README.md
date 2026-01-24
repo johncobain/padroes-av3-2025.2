@@ -11,6 +11,14 @@
 
 Padrão Utilizado: **_[Strategy](https://refactoring.guru/pt-br/design-patterns/strategy)_**
 
+Motivo:
+
+Identificação e papel das classes:
+
 ### Questão 2
 
 Padrão Utilizado: **_[Command](https://refactoring.guru/pt-br/design-patterns/command)_** e **_[Composite](https://refactoring.guru/pt-br/design-patterns/composite)_**
+
+Motivo:
+
+Identificação e papel das classes:
