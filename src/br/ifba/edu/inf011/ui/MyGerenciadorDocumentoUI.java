@@ -21,6 +21,13 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 		comandos.addOperacao("🔑 Proteger", e->this.protegerDocumento());
 		comandos.addOperacao("✍️ Assinar", e->this.assinarDocumento());
 		comandos.addOperacao("⏰ Urgente", e->this.tornarUrgente());
+
+		comandos.addOperacao("↩️ Desfazer", e -> this.undo());
+		comandos.addOperacao("↪️ Refazer", e -> this.redo());
+		comandos.addOperacao("⚡ Alt. & Assinar", e -> this.macroAlterarAssinar());
+		comandos.addOperacao("⚡ Priorizar", e -> this.macroPriorizar());
+		comandos.addOperacao("🗑️ Consolidar", e -> this.consolidar());
+		
 		return comandos;
 	 }
 	
@@ -43,6 +50,7 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 	protected void protegerDocumento() {
 		try {
 			this.controller.protegerDocumento(this.atual);
+			this.atual = this.controller.getDocumentoAtual();
 			this.refreshUI();
 		} catch (FWDocumentException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao proteger: " + e.getMessage());
@@ -52,6 +60,7 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 	protected void assinarDocumento() {
 		try {
 			this.controller.assinarDocumento(this.atual);
+			this.atual = this.controller.getDocumentoAtual();
 			this.refreshUI();
 		} catch (FWDocumentException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao assinar: " + e.getMessage());
@@ -61,6 +70,7 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 	protected void tornarUrgente() {
 		try {
 			this.controller.tornarUrgente(this.atual);
+			this.atual = this.controller.getDocumentoAtual();
 			this.refreshUI();
 		} catch (FWDocumentException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao tornar urgente: " + e.getMessage());
@@ -78,5 +88,53 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
         }
     }	
 	
+	private void undo(){
+		try{
+			this.controller.undo();
+			this.atual = this.controller.getDocumentoAtual();
+			this.refreshUI();
+		} catch (Exception e){
+			JOptionPane.showMessageDialog(this, "Erro ao desfazer: " + e.getMessage());
+		}
+	}
+
+	private void redo(){
+		try{
+			this.controller.redo();
+			this.atual = this.controller.getDocumentoAtual();
+			this.refreshUI();
+		} catch (Exception e){
+			JOptionPane.showMessageDialog(this, "Erro ao refazer: " + e.getMessage());
+		}
+	}
+
+	private void consolidar(){
+		try{
+			this.controller.consolidar();
+			JOptionPane.showMessageDialog(this, "Histórico consolidado com sucesso!");
+		} catch (Exception e){
+			JOptionPane.showMessageDialog(this, "Erro ao consolidar: " + e.getMessage());
+		}
+	}
+
+	private void macroAlterarAssinar(){
+		try{
+			this.controller.macroAlterarEAssinar(this.atual, this.areaEdicao.getConteudo());
+			this.atual = this.controller.getDocumentoAtual();
+			this.refreshUI();
+		} catch (Exception e){
+			JOptionPane.showMessageDialog(this, "Erro na macro Alterar & Assinar: " + e.getMessage());
+		}
+	}
+
+	private void macroPriorizar(){
+		try{
+			this.controller.macroPriorizar(this.atual);
+			this.atual = this.controller.getDocumentoAtual();
+			this.refreshUI();
+		} catch (Exception e){
+			JOptionPane.showMessageDialog(this, "Erro na macro Priorizar: " + e.getMessage());
+		}
+	}
 
 }

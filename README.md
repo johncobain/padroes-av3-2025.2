@@ -5,102 +5,126 @@
 - Andrey Gomes da Silva Nascimento
 - Gabriel Nascimento Miranda dos Santos
 
+---
+
 ## Detalhamento da Implementação das Questões
 
-### Questão 1
+---
 
-Padrão Utilizado: **_[Strategy](https://refactoring.guru/pt-br/design-patterns/strategy)_**
+## **Questão I - Strategy Pattern**
 
-## Motivo:
-Com a aplicação em seu estado inicial, o gerenciamento de diferentes tipos de documentos estava preso diante do uso de múltiplos ifs/elses, então a implementação do padrão Strategy é uma boa escolha para solucionar isso. Pois, com o uso do padrão,
-pode-se adicionar novas estratégias de autenticação com modificações mínimas no código, assim guardando o princípio de aberto e fechado (OCP), que antes era violado.
+### **Padrão Utilizado:**
 
-## Identificação e papel das classes:
+**[Strategy](https://refactoring.guru/pt-br/design-patterns/strategy)**
+
+### **Motivo da Escolha:**
+
+Com a aplicação em seu estado inicial, o gerenciamento de diferentes tipos de documentos estava preso a múltiplos `if/else` condicionais, violando o princípio **Open-Closed (OCP)** e dificultando a manutenção e extensão do código.
+
+A implementação do padrão **Strategy** resolve este problema ao:
+
+- **Eliminar condicionais**: Substitui `if/else` por polimorfismo
+- **Facilitar extensão**: Novas estratégias podem ser adicionadas sem modificar código existente
+- **Respeitar OCP**: Classes abertas para extensão, fechadas para modificação
+- **Aumentar testabilidade**: Cada estratégia pode ser testada isoladamente
+- **Melhorar legibilidade**: Lógica de autenticação encapsulada em classes específicas
+
+### **Identificação e Papel das Classes:**
+
 ```text
-Cliente:          - GerenciadorDocumentoModel (Define a estratégia desejada) 
-Strategy:         - AuthStrategy              (Interface com os contratos para autenticação) 
-Context:          - Autenticador              (Quem usa a estratégia definida pelo Cliente) 
-ConcreteStrategy: - DefaultAuthStrategy       (Implementação com informações padrão) 
-ConcreteStrategy: - CriminalAuthStrategy      (Implementação para documentos criminais) 
-ConcreteStrategy: - PessoalAuthStrategy       (Implementação para documentos pessoais) 
-ConcreteStrategy: - ExportAuthStrategy        (Implementação baseados na privacidade)
+┌─────────────────────────────────────────────────────────────────────┐
+│                      PADRÃO STRATEGY                                │
+├─────────────────────────────────────────────────────────────────────┤
+│ Cliente (Client):                                                   │
+│   └─ GerenciadorDocumentoModel                                      │
+│      • Define qual estratégia usar baseado no tipo de documento     │
+│      • Mantém mapa de estratégias (0→Criminal, 1→Pessoal, etc)      │
+│                                                                      │
+│ Contexto (Context):                                                 │
+│   └─ Autenticador                                                   │
+│      • Recebe estratégia do cliente                                 │
+│      • Executa método autenticar() usando a estratégia definida     │
+│      • Delega geração de número para a estratégia                   │
+│                                                                      │
+│ Estratégia (Strategy):                                              │
+│   └─ AutenticadorStrategy (interface)                               │
+│      • Define contrato: gerarNumero(Documento)                      │
+│      • Todas as estratégias concretas implementam esta interface    │
+│                                                                      │
+│ Estratégias Concretas (Concrete Strategies):                        │
+│   ├─ PadraoStrategy                                                 │
+│   │   • Gera: "DOC-" + timestamp                                    │
+│   │   • Usado como fallback quando tipo não é reconhecido           │
+│   │                                                                  │
+│   ├─ CriminalStrategy                                               │
+│   │   • Gera: "CRI-" + ano + "-" + hashCode                         │
+│   │   • Para documentos de investigação criminal                    │
+│   │                                                                  │
+│   ├─ PessoalStrategy                                                │
+│   │   • Gera: "PES-" + dia_do_ano + "-" + hash_proprietario         │
+│   │   • Para documentos pessoais                                    │
+│   │                                                                  │
+│   └─ ExportacaoStrategy                                             │
+│       • Gera: "SECURE-" + hash (sigiloso) ou "PUB-" + hash (público)│
+│       • Baseado na privacidade do documento                         │
+└─────────────────────────────────────────────────────────────────────┘
 ```
-### Questão 2
 
-Padrão Utilizado: **_[Command](https://refactoring.guru/pt-br/design-patterns/command)_** e **_[Composite](https://refactoring.guru/pt-br/design-patterns/composite)_**
+---
 
-Motivo:
+## **Questão II - Command & Composite Pattern**
 
-Identificação e papel das classes:
+### **Padrão Utilizado:**
 
-fluxo de execução do comando EditarConteudoCommand:
-1. UI chama: model.salvarDocumento(doc, "novo texto")
-2. Model cria: new EditarConteudoCommand(doc, "novo texto")
-3. Model executa: doc.getCommandHistory().execute(cmd)
-4. CommandHistory chama: cmd.execute()
-5. EditarConteudoCommand:
-   - Salva: conteudoAnterior = "texto antigo"
-   - Aplica: doc.setConteudo("novo texto")
-6. CommandHistory: Adiciona cmd à pilha de undo
-7. CommandHistory: Registra no log: "EXECUTAR: Editar conteúdo..."
+**[Command](https://refactoring.guru/pt-br/design-patterns/command)** e **[Composite](https://refactoring.guru/pt-br/design-patterns/composite)**
 
+### **Motivo da Escolha:**
 
+Para implementar um sistema de edição e autenticação de documentos com fluxos reversíveis e com a possibilidade de aplicar decorators (como assinatura, proteção, urgente), o padrão **Command** permite:
 
-fluxo decorators:
-Antes:
-repositorio = [documentoOriginal]
-atual = documentoOriginal
+- **Execução reversível**: Comandos podem ser desfeitos (undo)
+- **Fluxo controlado**: Execução em blocos com macros
+- **Decomposição de operações**: Edição e autenticação como comandos separados
 
-Execute:
-documentoDecorado = new AssinaturaDecorator(documentoOriginal)
-repositorio = [documentoDecorado]  ← Substituiu!
-atual = documentoDecorado
+### **Identificação e Papel das Classes:**
 
-Undo:
-repositorio = [documentoOriginal]  ← Voltou!
-atual = documentoOriginal
-
-
-Macro
-Exemplo: Macro "Alterar e Assinar"
-1. Execute:
-   - Edita conteúdo: "Versão 1" → "Versão 2"
-   - Assina: adiciona AssinaturaDecorator
-
-2. Undo (ordem reversa):
-   - Primeiro: Remove assinatura (AssinaturaDecorator)
-   - Depois: Restaura conteúdo ("Versão 2" → "Versão 1")
-
-Se fizéssemos na ordem normal:
-   - Restauraria conteúdo primeiro
-   - Depois tentaria remover assinatura
-   - PROBLEMA: A assinatura pode referenciar o conteúdo!
-
-
-
-Explicações dos métodos chave:
-
-salvarDocumento()
-
-O que faz: Cria EditarConteudoCommand e executa via CommandHistory
-Por quê: Transforma edição em comando reversível com log
-assinarDocumento()
-
-O que faz: Cria AssinarCommand passando this (o model)
-Por quê this?: Comando precisa atualizar repositório (trocar referências)
-Detalhe: Decorator envolve documento, precisamos substituir no repositório
-undo() / redo()
-
-O que faz: Delega para atual.getCommandHistory()
-Por quê no atual?: Cada documento tem histórico próprio
-Multi-documento: Undo afeta apenas documento selecionado
-macroAlterarEAssinar()
-
-O que faz: Cria MacroCommand com EditarConteudo + Assinar
-Por quê útil: Fluxo comum (editar → assinar) vira uma ação
-Undo: Desfaz as duas operações de uma vez
-atualizarRepositorio()
-
-O que faz: Substitui documento antigo por novo na lista
-Por quê necessário: Decorators criam novos objetos
-Usado por: Todos os comandos de decorator (Assinar, Proteger, TornarUrgente)
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│                      PADRÃO COMMAND & COMPOSITE                    │
+├─────────────────────────────────────────────────────────────────────┤
+│ Comando (Command):                                                  │
+│   └─ EditarConteudoCommand                                          │
+│      • Executa: model.salvarDocumento(doc, "novo texto")         │
+│      • Cria: new EditarConteudoCommand(doc, "novo texto")          │
+│      • Executa: doc.getCommandHistory().execute(cmd)              │
+│      • Chama: cmd.execute()                                        │
+│      • Salva: conteudoAnterior = "texto antigo"                   │
+│      • Aplica: doc.setConteudo("novo texto")                     │
+│      • Adiciona cmd à pilha de undo                              │
+│      • Registra no log: "EXECUTAR: Editar conteúdo..."            │
+│                                                                      │
+│ Comando Decorator (Decorator):                                     │
+│   └─ AssinaturaDecorator                                          │
+│      • Gera: documentoDecorado = new AssinaturaDecorator(documentoOriginal)│
+│      • Substitui: repositorio = [documentoDecorado] ← Substituiu!│
+│      • Undo: repositorio = [documentoOriginal] ← Voltou!          │
+│                                                                      │
+│ Macro (Macro):                                                      │
+│   └─ MacroCommand                                                 │
+│      • Cria: MacroCommand com EditarConteudo + Assinar            │
+│      • Fluxo comum (editar → assinar) vira uma ação               │
+│      • Undo: Desfaz as duas operações de uma vez                 │
+│                                                                      │
+│ Model (Model):                                                      │
+│   └─ Cria comandos: Instancia com parâmetros corretos            │
+│   └─ Delega execução: Para doc.getCommandHistory().execute()      │
+│   └─ Implementa macros: Cria MacroCommands                        │
+│   └─ Gerencia repositório: Método atualizarRepositorio() para decorators│
+│                                                                      │
+│ UI (UI):                                                              │
+│   └─ Botões novos: Undo, Redo, Macros, Consolidar                 │
+│   └─ Atualiza referências: Após decorators (this.atual = controller.getDocumentoAtual())│
+│   └─ Refresh visual: Mostra mudanças ao usuário                   │
+│   └─ Tratamento de erros: Try-catch com mensagens amigáveis       │
+└─────────────────────────────────────────────────────────────────────┘
+```

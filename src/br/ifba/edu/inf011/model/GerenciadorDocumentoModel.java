@@ -62,33 +62,36 @@ public class GerenciadorDocumentoModel {
         }
     }
 
-    public void assinarDocumento(Documento doc) throws FWDocumentException {
-        if (doc == null) return;
+    public Documento assinarDocumento(Documento doc) throws FWDocumentException {
+        if (doc == null) return null;
         try {
             Operador operador = factory.getOperador();
             operador.inicializar("jdc", "João das Couves");
             Command cmd = new AssinarCommand(this, doc, operador);
             doc.getCommandHistory().execute(cmd);
+            return this.getDocumentoAtual();
         } catch (Exception e) {
             throw new FWDocumentException("Erro ao assinar: " + e.getMessage());
         }
     }
     
-    public void protegerDocumento(Documento doc) throws FWDocumentException {
-        if (doc == null) return;
+    public Documento protegerDocumento(Documento doc) throws FWDocumentException {
+        if (doc == null) return null;
         try {
             Command cmd = new ProtegerCommand(this, doc);
             doc.getCommandHistory().execute(cmd);
+            return this.getDocumentoAtual();
         } catch (Exception e) {
             throw new FWDocumentException("Erro ao proteger: " + e.getMessage());
         }
     }
     
-    public void tornarUrgente(Documento doc) throws FWDocumentException {
-        if (doc == null) return;
+    public Documento tornarUrgente(Documento doc) throws FWDocumentException {
+        if (doc == null) return null;
         try {
             Command cmd = new TornarUrgenteCommand(this, doc);
             doc.getCommandHistory().execute(cmd);
+            return this.getDocumentoAtual();
         } catch (Exception e) {
             throw new FWDocumentException("Erro ao tornar urgente: " + e.getMessage());
         }
