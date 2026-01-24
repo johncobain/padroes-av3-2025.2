@@ -9,11 +9,11 @@ import br.ifba.edu.inf011.model.documentos.Privacidade;
  * Classe de teste gerada com Inteligência Artificial para questões de testes
  * fora do ambiente gráfico.
  */
-public class AppAvaliacaoIITeste {
+public class AppAvaliacaoIIITeste {
     
     private GerenciadorDocumentoModel model;
     
-    public AppAvaliacaoIITeste() {
+    public AppAvaliacaoIIITeste() {
     }
     
     /**
@@ -430,7 +430,7 @@ public class AppAvaliacaoIITeste {
             DocumentOperatorFactory factory = new CalculoPericialPeritoFactory();
             
             // Executar testes da Questão II
-            AppAvaliacaoIITeste app = new AppAvaliacaoIITeste();
+            AppAvaliacaoIIITeste app = new AppAvaliacaoIIITeste();
             app.testarQuestaoII(factory);
             
         } catch (Exception e) {
