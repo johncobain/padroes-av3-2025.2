@@ -22,13 +22,17 @@ public class TornarUrgenteCommand implements Command {
           this.documentoUrgente = gestor.tornarUrgente(documentoOriginal);
         }
         model.atualizarRepositorio(documentoOriginal, documentoUrgente);
-        model.setDocumentoAtual(documentoUrgente);
+        if (model.getDocumentoAtual() == documentoOriginal) {
+            model.setDocumentoAtual(documentoUrgente);
+        }
     }
     
     @Override
     public void undo() {
         model.atualizarRepositorio(documentoUrgente, documentoOriginal);
-        model.setDocumentoAtual(documentoOriginal);
+        if (model.getDocumentoAtual() == documentoUrgente) {
+            model.setDocumentoAtual(documentoOriginal);
+        }
     }
     
     @Override
@@ -36,5 +40,10 @@ public class TornarUrgenteCommand implements Command {
         String numero = documentoOriginal.getNumero() != null ? 
                        documentoOriginal.getNumero() : "SEM-NUMERO";
         return "Tornar urgente documento " + numero;
+    }
+
+    @Override
+    public Documento getDocumentoAfetado() {
+        return this.documentoOriginal;
     }
 }

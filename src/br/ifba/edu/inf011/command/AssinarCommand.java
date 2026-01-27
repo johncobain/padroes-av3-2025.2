@@ -26,13 +26,17 @@ public class AssinarCommand implements Command {
         }
         model.atualizarRepositorio(documentoOriginal, documentoDecorado);
 
-        model.setDocumentoAtual(documentoDecorado);
+        if (model.getDocumentoAtual() == documentoOriginal) {
+            model.setDocumentoAtual(documentoDecorado);
+        }
     }
     
     @Override
     public void undo() {
         model.atualizarRepositorio(documentoDecorado, documentoOriginal);
-        model.setDocumentoAtual(documentoOriginal);
+        if (model.getDocumentoAtual() == documentoDecorado) {
+            model.setDocumentoAtual(documentoOriginal);
+        }
     }
     
     @Override
@@ -40,5 +44,10 @@ public class AssinarCommand implements Command {
         String numero = documentoOriginal.getNumero() != null ? 
                        documentoOriginal.getNumero() : "SEM-NUMERO";
         return "Assinar documento " + numero + " por " + operador.getNome();
+    }
+    
+    @Override
+    public Documento getDocumentoAfetado() {
+        return this.documentoOriginal;
     }
 }

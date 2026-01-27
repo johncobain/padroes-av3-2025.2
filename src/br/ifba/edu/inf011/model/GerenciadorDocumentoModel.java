@@ -24,12 +24,16 @@ public class GerenciadorDocumentoModel {
     private GestorDocumento gestor;
     private Documento atual;
 
+    private CommandHistory commandHistory;
+
     public GerenciadorDocumentoModel(DocumentOperatorFactory factory) {
         this.repositorio = new ArrayList<>();
         this.factory = factory;
         this.autenticador = new Autenticador();
         this.gestor = new GestorDocumento();
         this.atual = null;
+
+        this.commandHistory = new CommandHistory();
         
         this.estrategias = new HashMap<>();
         this.estrategias.put(0, new CriminalStrategy());
@@ -50,25 +54,27 @@ public class GerenciadorDocumentoModel {
         this.autenticador.setEstrategia(estrategia);
         this.autenticador.autenticar(tipoAutenticadorIndex, documento);
         
-        this.repositorio.add(documento);
-        this.atual = documento;
+        Command cmd = new CriarDocumentoCommand(this, documento);
+        this.commandHistory.execute(cmd);
+
         return documento;
     }
 
     public void salvarDocumento(Documento doc, String conteudo) throws Exception {
         if (doc != null) {
             Command cmd = new EditarConteudoCommand(doc, conteudo);
-            doc.getCommandHistory().execute(cmd);
+            this.commandHistory.execute(cmd);
         }
     }
 
     public Documento assinarDocumento(Documento doc) throws FWDocumentException {
         if (doc == null) return null;
         try {
+            this.atual = doc;
             Operador operador = factory.getOperador();
             operador.inicializar("jdc", "João das Couves");
             Command cmd = new AssinarCommand(this, doc, operador);
-            doc.getCommandHistory().execute(cmd);
+            this.commandHistory.execute(cmd);
             return this.getDocumentoAtual();
         } catch (Exception e) {
             throw new FWDocumentException("Erro ao assinar: " + e.getMessage());
@@ -78,8 +84,9 @@ public class GerenciadorDocumentoModel {
     public Documento protegerDocumento(Documento doc) throws FWDocumentException {
         if (doc == null) return null;
         try {
+            this.atual = doc;
             Command cmd = new ProtegerCommand(this, doc);
-            doc.getCommandHistory().execute(cmd);
+            this.commandHistory.execute(cmd);
             return this.getDocumentoAtual();
         } catch (Exception e) {
             throw new FWDocumentException("Erro ao proteger: " + e.getMessage());
@@ -89,8 +96,9 @@ public class GerenciadorDocumentoModel {
     public Documento tornarUrgente(Documento doc) throws FWDocumentException {
         if (doc == null) return null;
         try {
+            this.atual = doc;
             Command cmd = new TornarUrgenteCommand(this, doc);
-            doc.getCommandHistory().execute(cmd);
+            this.commandHistory.execute(cmd);
             return this.getDocumentoAtual();
         } catch (Exception e) {
             throw new FWDocumentException("Erro ao tornar urgente: " + e.getMessage());
@@ -98,25 +106,20 @@ public class GerenciadorDocumentoModel {
     }
     
     public void undo() {
-        if (this.atual != null) {
-            this.atual.getCommandHistory().undo();
-        }
+        this.commandHistory.undo();
     }
 
     public void redo() {
-        if (this.atual != null) {
-            this.atual.getCommandHistory().redo();
-        }
+        this.commandHistory.redo();
     }
     
     public void consolidar() {
-        if (this.atual != null) {
-            this.atual.getCommandHistory().consolidate();
-        }
+        this.commandHistory.consolidate();
     }
     
     public void macroAlterarEAssinar(Documento doc, String conteudo) throws Exception {
         if (doc == null) return;
+        this.atual = doc;
         Operador operador = factory.getOperador();
         operador.inicializar("jdc", "João das Couves");
         
@@ -124,11 +127,12 @@ public class GerenciadorDocumentoModel {
         macro.addCommand(new EditarConteudoCommand(doc, conteudo));
         macro.addCommand(new AssinarCommand(this, doc, operador));
         
-        doc.getCommandHistory().execute(macro);
+        this.commandHistory.execute(macro);
     }
     
     public void macroPriorizar(Documento doc) throws Exception {
         if (doc == null) return;
+        this.atual = doc;
         Operador operador = factory.getOperador();
         operador.inicializar("jdc", "João das Couves");
         
@@ -136,9 +140,19 @@ public class GerenciadorDocumentoModel {
         macro.addCommand(new TornarUrgenteCommand(this, doc));
         macro.addCommand(new AssinarCommand(this, doc, operador));
         
-        doc.getCommandHistory().execute(macro);
+        this.commandHistory.execute(macro);
     }
-    
+
+    public void adicionarDocumentoAoRepositorio(Documento doc) {
+        if(!repositorio.contains(doc)){
+            repositorio.add(doc);
+        }
+    }
+
+    public void removerDocumentoDoRepositorio(Documento doc) {
+        repositorio.remove(doc);
+    }
+
     public void atualizarRepositorio(Documento antigo, Documento novo) {
         int index = repositorio.indexOf(antigo);
         if (index != -1) {
@@ -149,4 +163,5 @@ public class GerenciadorDocumentoModel {
     public List<Documento> getRepositorio() { return repositorio; }
     public Documento getDocumentoAtual() { return this.atual; }
     public void setDocumentoAtual(Documento doc) { this.atual = doc; }
+    public CommandHistory getCommandHistory() { return this.commandHistory; }
 }

@@ -1,9 +1,12 @@
 package br.ifba.edu.inf011.ui;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 
 import br.ifba.edu.inf011.af.DocumentOperatorFactory;
+import br.ifba.edu.inf011.command.Command;
 import br.ifba.edu.inf011.model.FWDocumentException;
+import br.ifba.edu.inf011.model.documentos.Documento;
 import br.ifba.edu.inf011.model.documentos.Privacidade;
 
 public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
@@ -40,17 +43,26 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 	}
 	
 	protected void salvarConteudo() {
-        try {
-            this.controller.salvarDocumento(this.atual, this.areaEdicao.getConteudo());
-        } catch (Exception e) {
-        	JOptionPane.showMessageDialog(this, "Erro ao Salvar: " + e.getMessage());
-        }
-    }	
-	
+		try {
+			if (this.atual == null) {
+				JOptionPane.showMessageDialog(this, "Nenhum documento selecionado!");
+				return;
+			}
+			this.controller.salvarDocumento(this.atual, this.areaEdicao.getConteudo());
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, "Erro ao Salvar: " + e.getMessage());
+		}
+	}    
+    
 	protected void protegerDocumento() {
 		try {
+			if (this.atual == null) {
+				JOptionPane.showMessageDialog(this, "Nenhum documento selecionado!");
+				return;
+			}
 			this.controller.protegerDocumento(this.atual);
 			this.atual = this.controller.getDocumentoAtual();
+			this.atualizarListaDocumentos();
 			this.refreshUI();
 		} catch (FWDocumentException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao proteger: " + e.getMessage());
@@ -59,39 +71,63 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 
 	protected void assinarDocumento() {
 		try {
+			if (this.atual == null) {
+				JOptionPane.showMessageDialog(this, "Nenhum documento selecionado!");
+				return;
+			}
 			this.controller.assinarDocumento(this.atual);
 			this.atual = this.controller.getDocumentoAtual();
+			this.atualizarListaDocumentos();
 			this.refreshUI();
 		} catch (FWDocumentException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao assinar: " + e.getMessage());
-		}		
+		}        
 	}
 	
 	protected void tornarUrgente() {
 		try {
+			if (this.atual == null) {
+				JOptionPane.showMessageDialog(this, "Nenhum documento selecionado!");
+				return;
+			}
 			this.controller.tornarUrgente(this.atual);
 			this.atual = this.controller.getDocumentoAtual();
+			this.atualizarListaDocumentos();
 			this.refreshUI();
 		} catch (FWDocumentException e) {
 			JOptionPane.showMessageDialog(this, "Erro ao tornar urgente: " + e.getMessage());
-		}		
-	}	
+		}        
+	}    
 
 	private void criarDocumento(Privacidade privacidade) {
-        try {
-            int tipoIndex = this.barraSuperior.getTipoSelecionadoIndice();
-            this.atual = this.controller.criarDocumento(tipoIndex, privacidade);
-            this.barraDocs.addDoc("[" + atual.getNumero() + "]");
-            this.refreshUI();
-        } catch (FWDocumentException e) {
-            JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage());
-        }
-    }	
-	
+		try {
+			int tipoIndex = this.barraSuperior.getTipoSelecionadoIndice();
+			this.atual = this.controller.criarDocumento(tipoIndex, privacidade);
+			this.atualizarListaDocumentos();
+			this.refreshUI();
+		} catch (FWDocumentException e) {
+			JOptionPane.showMessageDialog(this, "Erro: " + e.getMessage());
+		}
+	}    
+    
 	private void undo(){
 		try{
 			this.controller.undo();
-			this.atual = this.controller.getDocumentoAtual();
+			
+			Command comandoDesfeito = this.controller.getCommandHistory().getLastUndone();
+			
+			if (comandoDesfeito != null) {
+				Documento docAfetado = comandoDesfeito.getDocumentoAfetado();
+				
+				if (docAfetado != null && this.controller.getRepositorio().contains(docAfetado)) {
+						this.atual = docAfetado;
+				} else {
+						this.atual = this.controller.getDocumentoAtual();
+				}
+			} else {
+				this.atual = this.controller.getDocumentoAtual();
+			}
+			this.atualizarListaDocumentos();
 			this.refreshUI();
 		} catch (Exception e){
 			JOptionPane.showMessageDialog(this, "Erro ao desfazer: " + e.getMessage());
@@ -101,7 +137,21 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 	private void redo(){
 		try{
 			this.controller.redo();
-			this.atual = this.controller.getDocumentoAtual();
+			
+			Command comandoRefeito = this.controller.getCommandHistory().getLastExecuted();
+			
+			if (comandoRefeito != null) {
+				Documento docAfetado = comandoRefeito.getDocumentoAfetado();
+				
+				if (docAfetado != null && this.controller.getRepositorio().contains(docAfetado)) {
+					this.atual = docAfetado;
+				} else {
+					this.atual = this.controller.getDocumentoAtual();
+				}
+			} else {
+				this.atual = this.controller.getDocumentoAtual();
+			}
+			this.atualizarListaDocumentos();
 			this.refreshUI();
 		} catch (Exception e){
 			JOptionPane.showMessageDialog(this, "Erro ao refazer: " + e.getMessage());
@@ -119,8 +169,13 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 
 	private void macroAlterarAssinar(){
 		try{
+			if (this.atual == null) {
+				JOptionPane.showMessageDialog(this, "Nenhum documento selecionado!");
+				return;
+			}
 			this.controller.macroAlterarEAssinar(this.atual, this.areaEdicao.getConteudo());
 			this.atual = this.controller.getDocumentoAtual();
+			this.atualizarListaDocumentos();
 			this.refreshUI();
 		} catch (Exception e){
 			JOptionPane.showMessageDialog(this, "Erro na macro Alterar & Assinar: " + e.getMessage());
@@ -129,12 +184,36 @@ public class MyGerenciadorDocumentoUI extends AbstractGerenciadorDocumentosUI{
 
 	private void macroPriorizar(){
 		try{
+			if (this.atual == null) {
+				JOptionPane.showMessageDialog(this, "Nenhum documento selecionado!");
+				return;
+			}
 			this.controller.macroPriorizar(this.atual);
 			this.atual = this.controller.getDocumentoAtual();
+			this.atualizarListaDocumentos();
 			this.refreshUI();
 		} catch (Exception e){
 			JOptionPane.showMessageDialog(this, "Erro na macro Priorizar: " + e.getMessage());
 		}
 	}
-
+    
+	private void atualizarListaDocumentos() {
+		DefaultListModel<String> model = (DefaultListModel<String>) this.listDocs;
+		model.clear();
+		
+		for (var doc : this.controller.getRepositorio()) {
+			model.addElement("[" + doc.getNumero() + "]");
+		}
+		
+		if (this.atual != null) {
+			int index = this.controller.getRepositorio().indexOf(this.atual);
+			if (index != -1) {
+				this.barraDocs.setSelectedIndex(index);
+			}else{
+				this.barraDocs.setSelectedIndex(-1);
+			}
+		} else {
+			this.barraDocs.setSelectedIndex(-1);
+		}
+	}
 }

@@ -49,6 +49,14 @@ public class CommandHistory {
     log("CONSOLIDAR", "Histórico de comandos consolidado.");
   }
 
+  public Command getLastUndone() {
+    return redoStack.isEmpty() ? null : redoStack.peek();
+  }
+
+  public Command getLastExecuted() {
+    return history.isEmpty() ? null : history.peek();
+  }
+
   private void log(String action, String message){
     try(FileWriter writer = new FileWriter(LOG_FILE, true)){
       String timestamp = LocalDateTime.now().format(formatter);
