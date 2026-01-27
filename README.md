@@ -144,7 +144,9 @@ Para implementar um sistema de edição e autenticação de documentos com fluxo
 │      • atualizarRepositorio(): Substitui documento (decorators)     │
 │      • setDocumentoAtual(): Define documento atual da aplicação     │
 └─────────────────────────────────────────────────────────────────────┘
+```
 
+``` text
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      PADRÃO COMPOSITE                               │
 ├─────────────────────────────────────────────────────────────────────┤
