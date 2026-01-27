@@ -56,10 +56,4 @@ public class DocumentoDecorator implements Documento{
 		this.wrappeeDocumento.setNumero(numero);
 		
 	}	
-
-	@Override
-	public CommandHistory getCommandHistory() {
-		return this.wrappeeDocumento.getCommandHistory();
-	}
-	
 }

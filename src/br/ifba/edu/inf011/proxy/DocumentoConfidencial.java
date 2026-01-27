@@ -60,10 +60,4 @@ public class DocumentoConfidencial implements Documento{
 	public void setNumero(String numero) {
 		this.wrappeeDocumento.setNumero(numero);
 	}
-
-	@Override
-	public CommandHistory getCommandHistory() {
-		return this.wrappeeDocumento.getCommandHistory();
-	}
-
 }
