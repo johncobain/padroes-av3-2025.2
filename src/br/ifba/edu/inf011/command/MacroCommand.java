@@ -3,6 +3,8 @@ package br.ifba.edu.inf011.command;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.ifba.edu.inf011.model.documentos.Documento;
+
 public class MacroCommand implements Command {
     private List<Command> commands;
     private String nome;
@@ -33,5 +35,13 @@ public class MacroCommand implements Command {
     @Override
     public String getDescription() {
         return "Macro: " + nome + " (" + commands.size() + " operações)";
+    }
+
+    @Override
+    public Documento getDocumentoAfetado() {
+        if (!commands.isEmpty()) {
+            return commands.get(commands.size() - 1).getDocumentoAfetado();
+        }
+        return null;
     }
 }

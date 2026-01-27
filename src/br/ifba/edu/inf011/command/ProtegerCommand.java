@@ -22,13 +22,17 @@ public class ProtegerCommand implements Command {
             this.documentoProtegido = gestor.proteger(documentoOriginal);
         }
         model.atualizarRepositorio(documentoOriginal, documentoProtegido);
-        model.setDocumentoAtual(documentoProtegido);
+        if (model.getDocumentoAtual() == documentoOriginal) {
+            model.setDocumentoAtual(documentoProtegido);
+        }
     }
     
     @Override
     public void undo() {
         model.atualizarRepositorio(documentoProtegido, documentoOriginal);
-        model.setDocumentoAtual(documentoOriginal);
+        if (model.getDocumentoAtual() == documentoProtegido) {
+            model.setDocumentoAtual(documentoOriginal);
+        }
     }
     
     @Override
@@ -36,5 +40,9 @@ public class ProtegerCommand implements Command {
         String numero = documentoOriginal.getNumero() != null ? 
                        documentoOriginal.getNumero() : "SEM-NUMERO";
         return "Proteger documento " + numero;
+    }
+    @Override
+    public Documento getDocumentoAfetado() {
+        return this.documentoOriginal;
     }
 }

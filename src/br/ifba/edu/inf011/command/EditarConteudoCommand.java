@@ -34,4 +34,9 @@ public class EditarConteudoCommand implements Command {
                        this.documento.getNumero() : "SEM-NUMERO";
         return "Editar conteúdo do documento " + numero;
     }
+    
+    @Override
+    public Documento getDocumentoAfetado() {
+        return this.documento;
+    }
 }

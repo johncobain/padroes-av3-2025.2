@@ -37,7 +37,13 @@ public class JPanelListaDocumentos<T> extends JPanel{
 		return this.listDocumentos.getSelectedIndex();
 	}
 	
-	
+	public void setSelectedIndex(int index) {
+		if (index >= 0 && index < this.listDocumentos.getModel().getSize()) {
+			this.listDocumentos.setSelectedIndex(index);
+		} else {
+			this.listDocumentos.clearSelection();
+		}
+	}
 	
 
 }

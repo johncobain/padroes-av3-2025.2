@@ -6,7 +6,7 @@ import br.ifba.edu.inf011.model.documentos.Documento;
 public class CriarDocumentoCommand implements Command {
   private GerenciadorDocumentoModel model;
   private Documento documento;
-  private Documento ultimoDocumento;
+  private Documento documentoAnterior;
   private boolean foiAdicionado;
 
   public CriarDocumentoCommand(GerenciadorDocumentoModel model, Documento documento) {
@@ -18,8 +18,7 @@ public class CriarDocumentoCommand implements Command {
   @Override
   public void execute() {
     if (!foiAdicionado) {
-      this.ultimoDocumento = model.getDocumentoAtual();
-
+      this.documentoAnterior = model.getDocumentoAtual();
       model.adicionarDocumentoAoRepositorio(documento);
       model.setDocumentoAtual(documento);
       foiAdicionado = true;
@@ -30,7 +29,7 @@ public class CriarDocumentoCommand implements Command {
   public void undo() {
     if(foiAdicionado){
       model.removerDocumentoDoRepositorio(documento);
-      model.setDocumentoAtual(ultimoDocumento);
+      model.setDocumentoAtual(documentoAnterior);
       foiAdicionado = false;
     }
   }
@@ -40,5 +39,10 @@ public class CriarDocumentoCommand implements Command {
     String numero = documento.getNumero() != null ? 
                     documento.getNumero() : "SEM-NUMERO";
     return "Criar documento " + numero;
+  }
+
+  @Override
+  public Documento getDocumentoAfetado() {
+    return foiAdicionado ? documento : documentoAnterior;
   }
 }

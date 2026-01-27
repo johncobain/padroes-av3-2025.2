@@ -70,6 +70,7 @@ public class GerenciadorDocumentoModel {
     public Documento assinarDocumento(Documento doc) throws FWDocumentException {
         if (doc == null) return null;
         try {
+            this.atual = doc;
             Operador operador = factory.getOperador();
             operador.inicializar("jdc", "João das Couves");
             Command cmd = new AssinarCommand(this, doc, operador);
@@ -83,6 +84,7 @@ public class GerenciadorDocumentoModel {
     public Documento protegerDocumento(Documento doc) throws FWDocumentException {
         if (doc == null) return null;
         try {
+            this.atual = doc;
             Command cmd = new ProtegerCommand(this, doc);
             this.commandHistory.execute(cmd);
             return this.getDocumentoAtual();
@@ -94,6 +96,7 @@ public class GerenciadorDocumentoModel {
     public Documento tornarUrgente(Documento doc) throws FWDocumentException {
         if (doc == null) return null;
         try {
+            this.atual = doc;
             Command cmd = new TornarUrgenteCommand(this, doc);
             this.commandHistory.execute(cmd);
             return this.getDocumentoAtual();
@@ -116,6 +119,7 @@ public class GerenciadorDocumentoModel {
     
     public void macroAlterarEAssinar(Documento doc, String conteudo) throws Exception {
         if (doc == null) return;
+        this.atual = doc;
         Operador operador = factory.getOperador();
         operador.inicializar("jdc", "João das Couves");
         
@@ -128,6 +132,7 @@ public class GerenciadorDocumentoModel {
     
     public void macroPriorizar(Documento doc) throws Exception {
         if (doc == null) return;
+        this.atual = doc;
         Operador operador = factory.getOperador();
         operador.inicializar("jdc", "João das Couves");
         
