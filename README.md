@@ -4,6 +4,7 @@
 
 - Andrey Gomes da Silva Nascimento
 - Gabriel Nascimento Miranda dos Santos
+- Lara Carolina Brito dos Santos
 
 ---
 
@@ -39,31 +40,31 @@ A implementação do padrão **Strategy** resolve este problema ao:
 │   └─ GerenciadorDocumentoModel                                      │
 │      • Define qual estratégia usar baseado no tipo de documento     │
 │      • Mantém mapa de estratégias (0→Criminal, 1→Pessoal, etc)      │
-│                                                                      │
+│                                                                     │
 │ Contexto (Context):                                                 │
 │   └─ Autenticador                                                   │
 │      • Recebe estratégia do cliente                                 │
 │      • Executa método autenticar() usando a estratégia definida     │
 │      • Delega geração de número para a estratégia                   │
-│                                                                      │
+│                                                                     │
 │ Estratégia (Strategy):                                              │
 │   └─ AutenticadorStrategy (interface)                               │
 │      • Define contrato: gerarNumero(Documento)                      │
 │      • Todas as estratégias concretas implementam esta interface    │
-│                                                                      │
+│                                                                     │
 │ Estratégias Concretas (Concrete Strategies):                        │
 │   ├─ PadraoStrategy                                                 │
 │   │   • Gera: "DOC-" + timestamp                                    │
 │   │   • Usado como fallback quando tipo não é reconhecido           │
-│   │                                                                  │
+│   │                                                                 │
 │   ├─ CriminalStrategy                                               │
 │   │   • Gera: "CRI-" + ano + "-" + hashCode                         │
 │   │   • Para documentos de investigação criminal                    │
-│   │                                                                  │
+│   │                                                                 │
 │   ├─ PessoalStrategy                                                │
 │   │   • Gera: "PES-" + dia_do_ano + "-" + hash_proprietario         │
 │   │   • Para documentos pessoais                                    │
-│   │                                                                  │
+│   │                                                                 │
 │   └─ ExportacaoStrategy                                             │
 │       • Gera: "SECURE-" + hash (sigiloso) ou "PUB-" + hash (público)│
 │       • Baseado na privacidade do documento                         │
@@ -80,51 +81,99 @@ A implementação do padrão **Strategy** resolve este problema ao:
 
 ### **Motivo da Escolha:**
 
-Para implementar um sistema de edição e autenticação de documentos com fluxos reversíveis e com a possibilidade de aplicar decorators (como assinatura, proteção, urgente), o padrão **Command** permite:
+Para implementar um sistema de edição e autenticação de documentos com fluxos reversíveis e com a possibilidade de aplicar decorators (como assinatura, proteção, urgente), os padrões **Command** e **Composite** permitem:
 
-- **Execução reversível**: Comandos podem ser desfeitos (undo)
-- **Fluxo controlado**: Execução em blocos com macros
-- **Decomposição de operações**: Edição e autenticação como comandos separados
+- **Execução reversível**: Comandos podem ser desfeitos (undo) e refeitos (redo)
+- **Fluxo controlado**: Execução em blocos com macros (Composite)
+- **Decomposição de operações**: Edição, assinatura e decoração como comandos separados
+- **Histórico completo**: Rastreamento de todas as operações com log persistente
+- **Consolidação**: Capacidade de limpar histórico de comandos
 
 ### **Identificação e Papel das Classes:**
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      PADRÃO COMMAND & COMPOSITE                    │
+│                      PADRÃO COMMAND                                 │
 ├─────────────────────────────────────────────────────────────────────┤
-│ Comando (Command):                                                  │
-│   └─ EditarConteudoCommand                                          │
-│      • Executa: model.salvarDocumento(doc, "novo texto")         │
-│      • Cria: new EditarConteudoCommand(doc, "novo texto")          │
-│      • Executa: doc.getCommandHistory().execute(cmd)              │
-│      • Chama: cmd.execute()                                        │
-│      • Salva: conteudoAnterior = "texto antigo"                   │
-│      • Aplica: doc.setConteudo("novo texto")                     │
-│      • Adiciona cmd à pilha de undo                              │
-│      • Registra no log: "EXECUTAR: Editar conteúdo..."            │
-│                                                                      │
-│ Comando Decorator (Decorator):                                     │
-│   └─ AssinaturaDecorator                                          │
-│      • Gera: documentoDecorado = new AssinaturaDecorator(documentoOriginal)│
-│      • Substitui: repositorio = [documentoDecorado] ← Substituiu!│
-│      • Undo: repositorio = [documentoOriginal] ← Voltou!          │
-│                                                                      │
-│ Macro (Macro):                                                      │
-│   └─ MacroCommand                                                 │
-│      • Cria: MacroCommand com EditarConteudo + Assinar            │
-│      • Fluxo comum (editar → assinar) vira uma ação               │
-│      • Undo: Desfaz as duas operações de uma vez                 │
-│                                                                      │
-│ Model (Model):                                                      │
-│   └─ Cria comandos: Instancia com parâmetros corretos            │
-│   └─ Delega execução: Para doc.getCommandHistory().execute()      │
-│   └─ Implementa macros: Cria MacroCommands                        │
-│   └─ Gerencia repositório: Método atualizarRepositorio() para decorators│
-│                                                                      │
-│ UI (UI):                                                              │
-│   └─ Botões novos: Undo, Redo, Macros, Consolidar                 │
-│   └─ Atualiza referências: Após decorators (this.atual = controller.getDocumentoAtual())│
-│   └─ Refresh visual: Mostra mudanças ao usuário                   │
-│   └─ Tratamento de erros: Try-catch com mensagens amigáveis       │
+│ Command (Interface):                                                │
+│   └─ Command                                                        │
+│      • Define contrato: execute(), undo(), getDescription()         │
+│      • Método default: getDocumentoAfetado() → Para UI              │
+│                                                                     │
+│ Comandos Concretos (Concrete Commands):                             │
+│   ├─ CriarDocumentoCommand                                          │
+│   │   • Execute: Adiciona documento ao repositório                  │
+│   │   • Undo: Remove documento do repositório                       │
+│   │   • getDocumentoAfetado(): Retorna documento criado (execute)   │
+│   │                          ou anterior (undo)                     │
+│   │                                                                 │
+│   ├─ EditarConteudoCommand                                          │
+│   │   • Execute: Salva conteúdo anterior e aplica novo conteúdo     │
+│   │   • Undo: Restaura conteúdo anterior                            │
+│   │   • getDocumentoAfetado(): Retorna documento editado            │
+│   │                                                                 │
+│   ├─ AssinarCommand                                                 │
+│   │   • Execute: Cria AssinaturaDecorator e atualiza repositório    │
+│   │   • Undo: Remove AssinaturaDecorator do repositório             │
+│   │   • getDocumentoAfetado(): Retorna documento original           │
+│   │                                                                 │
+│   ├─ ProtegerCommand                                                │
+│   │   • Execute: Cria DocumentoConfidencial                         │
+│   │   • Undo: Remove proteção do documento                          │
+│   │   • getDocumentoAfetado(): Retorna documento original           │
+│   │                                                                 │
+│   └─ TornarUrgenteCommand                                           │
+│       • Execute: Cria SeloUrgenciaDecorator                         │
+│       • Undo: Remove SeloUrgenciaDecorator                          │
+│       • getDocumentoAfetado(): Retorna documento original           │
+│                                                                     │
+│ Invoker (Invocador):                                                │
+│   └─ CommandHistory                                                 │
+│      • Mantém duas pilhas: history (undo) e redoStack (redo)        │
+│      • Método execute(): Executa comando e adiciona ao histórico    │
+│      • Método undo(): Desfaz último comando da pilha history        │
+│      • Método redo(): Refaz último comando da pilha redoStack       │
+│      • Método consolidate(): Limpa ambas as pilhas                  │
+│      • Métodos de acesso: getLastUndone(), getLastExecuted()        │
+│      • Log persistente: Registra todas as operações em arquivo      │
+│                                                                     │
+│ Receiver (Receptor):                                                │
+│   └─ GerenciadorDocumentoModel                                      │
+│      • adicionarDocumentoAoRepositorio(): Adiciona ao repositório   │
+│      • removerDocumentoDoRepositorio(): Remove do repositório       │
+│      • atualizarRepositorio(): Substitui documento (decorators)     │
+│      • setDocumentoAtual(): Define documento atual da aplicação     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                      PADRÃO COMPOSITE                               │
+├─────────────────────────────────────────────────────────────────────┤
+│ Component (Componente):                                             │
+│   └─ Command (interface)                                            │
+│      • Define interface comum para comandos simples e compostos     │
+│                                                                     │
+│ Composite (Composto):                                               │
+│   └─ MacroCommand                                                   │
+│      • Mantém lista de comandos (List<Command>)                     │
+│      • Execute: Executa todos os comandos na ordem                  │
+│      • Undo: Desfaz todos os comandos na ordem reversa              │
+│      • getDocumentoAfetado(): Retorna documento do último comando   │
+│      • Permite agrupar operações complexas                          │
+│                                                                     │
+│ Leaf (Folha):                                                       │
+│   └─ Todos os comandos concretos                                    │
+│      • Implementam operações atômicas                               │
+│      • Não têm sub-comandos                                         │
+│                                                                     │
+│ Macros Implementadas:                                               │
+│   ├─ "Alterar e Assinar"                                            │
+│   │   • EditarConteudoCommand + AssinarCommand                      │
+│   │   • Edita conteúdo e assina o documento em uma operação         │
+│   │   • Undo: Desfaz assinatura e depois edição                     │
+│   │                                                                 │
+│   └─ "Priorizar"                                                    │
+│       • TornarUrgenteCommand + AssinarCommand                       │
+│       • Marca como urgente e assina o documento                     │
+│       • Undo: Desfaz assinatura e depois urgência                   │
 └─────────────────────────────────────────────────────────────────────┘
 ```
