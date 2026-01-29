@@ -67,6 +67,10 @@ public abstract class AbstractGerenciadorDocumentosUI extends JFrame implements 
 
     protected void refreshUI() {
         try {
+					if (this.atual == null) {
+							this.areaEdicao.atualizar("");
+							return;
+					}
         	this.areaEdicao.atualizar(this.atual.getConteudo());
         } catch (Exception e) {
         	this.areaEdicao.atualizar("");
